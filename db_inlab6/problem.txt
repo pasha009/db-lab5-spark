@@ -1,0 +1,3 @@
+Modify the NewsMonthRow  program to find the word count in the article_body attribute in each month (e.g. 2018-06, 2018-07, etc).
+The output would be triples of the form (year-month, word, count).
+You can either concatenate strings to get the groups, or create rows and use the .groupby() function to group on multiple attributes.
