@@ -1,0 +1,25 @@
+n this assignment you have to build a web crawler using Spark.  For simplicity, you can restrict your crawl to the CSE website, starting from www.cse.iitb.ac.in/link-to-be-provide (for now use a small directory that you create yourself) .
+You will only follow relative URLs (without a protocol specifier or hostname), which point into the same site, not external URLs.
+
+In each round, you have a dataset of URLs to crawl, and generate a new dataset of URLs to be crawled in the next round, as detailed below.
+
+Part 1:  In a round, you use the dataset with the given URLs, use flatmap to download the page content from each URL and then extract all relative local URLs from the downloaded page.  To do so you look for strings of the form <a href="xyz">  where "xyz" does not start with http, or with #, and does not contain a .. (to avoid infinite loops), and collect these into a dataset.  But before you add the URL, if it has a # character, remove that and any following characters. 
+
+Also, when you download a page, first check the content type, and ignore it if the content type is not html. 
+There are many documents, image and video files which you really don't want to download.
+Here's how you can do that:  
+
+URL url = new URL(urlname);
+HttpURLConnection connection = (HttpURLConnection)  url.openConnection();
+connection.setRequestMethod("HEAD");
+connection.connect();
+String contentType = connection.getContentType();
+
+
+You basically defined a function that takes a URL and returns an iterator on the list of URLs found in that URL, and provide this function to the flatmap function.   You will find the Java URL class quite useful for this task:  https://docs.oracle.com/javase/tutorial/networking/urls/readingURL.html
+
+Now you will need to iterate on top of the above.  In each round, you get URLs as above, and union/except operations on datasets to track the set of all (relative) URLs found so far, and the new ones found in this round.  You need to force execution by caching the dataset and doing a count on it.  
+If the new ones is a non-empty set (count > 0), you continue iterating, for a maximum depth of 5 (counting the root page as depth 0) 
+Otherwise, you output the dataset of all relative URLs found by collecting it and printing it out.
+
+Part 2: Now extend the above to also find the title of each URL as above.    For the current CSE website, the html title attribute is always fixed, and the real title is inside an element "<div class="pad> ...title ...</div>.  You should extract this title when you download the page and output it to the set of all URLs found as a row with two attributes, the URL and the title.  Your output will be this dataset with URL and title.
